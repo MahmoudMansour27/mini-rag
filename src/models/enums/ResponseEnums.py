@@ -9,4 +9,5 @@ class ResponseSignal(Enum):
 
     # ------ Processing Signals ------
     UNSPORRTED_FILE_TYPE = "Unsupported file type"
+    PROCESSING_SUCCESS = "File processed successfully"
     PROCESSING_FAILED = "File processing failed"
