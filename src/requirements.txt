@@ -1,0 +1,4 @@
+fastapi==0.139.0
+fastapi[standard]
+pydantic-settings==2.14.2
+aiofiles==25.1.0
