@@ -100,7 +100,7 @@ async def process_endpoint(request: Request, project_id:str, process_request: Pr
             chunk_text=chunk.page_content,
             chunk_metadata= chunk.metadata,
             chunk_order=i + 1,
-            chunk_project_id= project.project_id
+            chunk_project_id= project.id
          
         )
         for i, chunk in enumerate(file_chunks)
