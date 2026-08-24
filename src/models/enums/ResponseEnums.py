@@ -11,3 +11,7 @@ class ResponseSignal(Enum):
     UNSPORRTED_FILE_TYPE = "Unsupported file type"
     PROCESSING_SUCCESS = "File processed successfully"
     PROCESSING_FAILED = "File processing failed"
+
+    # ------ Assets Operations ------
+    NO_FILES_ERROR = "not_found_files"
+    FILE_ID_ERROR = "no_file_found_with_this_id"

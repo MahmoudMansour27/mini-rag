@@ -3,3 +3,4 @@ from .db_schemes import *
 from .BaseDataModel import *
 from .ChunkModel import *
 from .ProjectModel import *
+from .AssetModel import *
