@@ -41,6 +41,7 @@ class AssetModel(BaseDataModel):
             "asset_type": asset_type
         }).to_list(length=None)
 
+        print(records)
         return [
             Asset(**record)
             for record in records

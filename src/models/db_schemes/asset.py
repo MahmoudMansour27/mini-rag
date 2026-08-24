@@ -4,7 +4,7 @@ from bson.objectid import ObjectId
 from datetime import datetime, timezone
 
 class Asset(BaseModel):
-    id: Optional[str] = Field(None, alias="_id")
+    id: Optional[ObjectId] = Field(None, alias="_id")
     asset_project_id: ObjectId
     asset_type: str = Field(..., min_length=1)
     asset_name: str = Field(..., min_length=1)
