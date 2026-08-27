@@ -3,6 +3,7 @@ from models.db_schemes import ProjectEntry, DataChunkEntry
 from stores.llm.LLMEnums import DocumentTypeEnum
 from typing import List
 import json
+
 from stores.llm.templates.template_parser import TemplateParser
 
 class NLPController(BaseController):
@@ -18,12 +19,12 @@ class NLPController(BaseController):
     def create_collection_name(self, project_id: str):
         return f"collection_{project_id}".strip()
 
-    def reset_vector_db_collection(self, project_id:str):
-        collection_name = self.create_collection_name(project_id)
+    def reset_vector_db_collection(self, project: ProjectEntry):
+        collection_name = self.create_collection_name(project.project_id)
         return self.vectordb_client.delete_collection(collection_name= collection_name)
 
-    def get_vector_db_collection_info(self, project_id: str):
-        collection_name = self.create_collection_name(project_id)
+    def get_vector_db_collection_info(self, project: ProjectEntry):
+        collection_name = self.create_collection_name(project.project_id)
         collection_info = self.vectordb_client.get_collection_info(collection_name= collection_name)
 
         print(f"For developement: Collection info:\n {collection_info}")
@@ -87,6 +88,8 @@ class NLPController(BaseController):
         if not results:
             print("No results found in the vector database.")
             return False
+
+        print(f"For development: Search results:\n {results}")
         return results
 
     def answer_rag_question(self, project: ProjectEntry, query: str, limit: int = 10):
