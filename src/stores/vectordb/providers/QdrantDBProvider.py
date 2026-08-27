@@ -18,7 +18,6 @@ class QdrantDBProvider(VectorDBAbstractInterface):
     def connect(self):
         self.client = QdrantClient(path= self.db_path)
 
-
     def disconnect(self):
         self.client= None
 

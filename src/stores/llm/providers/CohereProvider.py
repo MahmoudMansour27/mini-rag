@@ -71,9 +71,9 @@ class CohereProvider(LLMAbstractInterface):
             print("Embedding model not set. Please set an embedding model before generating embeddings.")
             return None
         
-        input_type = CohereEnums.DOCUMENT
-        if document_type == DocumentTypeEnum.QUERY:
-            input_type = CohereEnums.QUERY
+        input_type = CohereEnums.DOCUMENT.value
+        if document_type == DocumentTypeEnum.QUERY.value:
+            input_type = CohereEnums.QUERY.value
 
         response = self.client.embed(
             model= self.embedding_model,
