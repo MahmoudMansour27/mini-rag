@@ -20,6 +20,7 @@ class CohereProvider(LLMAbstractInterface):
         self.embedding_size = None
 
         self.client = cohere.Client(api_key= self.api_key)
+        self.enums = CohereEnums
 
     
     def set_generation_model(self, model_id):

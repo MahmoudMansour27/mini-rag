@@ -25,6 +25,8 @@ class OpenAIProvider(LLMAbstractInterface):
             api_key= self.api_key,
             api_url= self.api_url
         )
+
+        self.enums = OpenAIEnums
     
     def set_generation_model(self, model_id):
         self.generaion_model = model_id

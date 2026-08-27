@@ -3,6 +3,7 @@ from models.db_schemes import ProjectEntry, DataChunkEntry
 from stores.llm.LLMEnums import DocumentTypeEnum
 from typing import List
 import json
+from stores.llm.templates.template_parser import TemplateParser
 
 class NLPController(BaseController):
     def __init__(self, vectordb_client, generation_client,
@@ -99,6 +100,35 @@ class NLPController(BaseController):
         if not retrieved_docs or len(retrieved_docs) == 0:
             print("No documents retrieved for the given query.")
             return None, None, None
+
+        system_prompt = self.template_parser.get(group= "rag", key= "system_prompt")
+
+        document_prompts = "\n".join([
+            self.template_parser.get(group = "rag", key = "document_prompt",
+                                     var = {"doc_num":idx+1, 
+                                            "chunk_text": doc.text})
+                                            for idx, doc in enumerate(retrieved_docs)])
+
+        footer_prompt = self.template_parser.get(group= "rag", key= "footer_prompt")
+
+        chat_history = [
+            self.generation_client.construct_prompt(
+                role = self.generation_client.enums.SYSTEM.value,
+                prompt = system_prompt
+            )
+        ]
+
+        full_prompt = "\n".join([document_prompts, footer_prompt])
+
+        answer = self.generation_client.generate_text(
+            prompt = full_prompt,
+            chat_history= chat_history,
+        )
+
+        return answer, full_prompt, chat_history
+
+
+
 
         
 
