@@ -19,7 +19,7 @@ class CohereProvider(LLMAbstractInterface):
         self.embedding_model = None
         self.embedding_size = None
 
-        self.client = cohere.Client(api_key= self.api_key)
+        self.client = cohere.ClientV2(api_key= self.api_key)
         self.enums = CohereEnums
 
     
@@ -47,21 +47,41 @@ class CohereProvider(LLMAbstractInterface):
         
         max_output_tokens = max_output_tokens if max_output_tokens else self.default_generation_max_output_tokens
         temperature = temperature if temperature else self.default_generation_temperature
+        messages= [
+            chat_history,
+            { 
+                "role": "user",
+                "content": self.process_text(prompt)
+            }
+        ]
+
+        print(prompt)
 
         response = self.client.chat(
             model= self.generaion_model,
-            chat_history= chat_history,
-            message= self.process_text(prompt),
+            messages= messages,
             temperature= temperature,
             max_tokens= max_output_tokens
         )
 
-        if not response or not response.text:
+        if not response or not response.message:
             print("No response received from Cohere API.")
             return None
         
-        print(f"Cohere API response:\n {response.text}")
-        return response.text
+        print(f"Cohere API response:\n {response}")
+
+        response_dict = response.message.content[0].model_dump()
+        print(f"Answer dict:\n {response_dict}")
+
+        final_answer = ""
+        if response_dict.get("type") == "thinking":
+            print("Thinking:", response_dict.get("thinking"))
+            final_answer = response_dict.get("thinking")
+        elif response_dict.get("type") == "text":
+            print("Response:", response_dict.get("text"))
+            final_answer = response_dict.get("text")
+
+        return final_answer
     
     def embed_text(self, text, document_type = None):
         if not self.client:
@@ -80,7 +100,8 @@ class CohereProvider(LLMAbstractInterface):
             model= self.embedding_model,
             texts = [self.process_text(text)],
             input_type= input_type,
-            embedding_types=['float']
+            embedding_types=['float'],
+            output_dimension = self.embedding_size
         )
 
         if not response or not response.embeddings or not response.embeddings.float:
@@ -93,5 +114,5 @@ class CohereProvider(LLMAbstractInterface):
     def construct_prompt(self, prompt, role):
         return {
             "role": role,
-            "text": self.process_text(prompt)
+            "content": self.process_text(prompt)
         }

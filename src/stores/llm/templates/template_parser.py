@@ -19,7 +19,7 @@ class TemplateParser:
             self.language = self.default_language
 
     # get function
-    def get(self, group: str, key: str, var: dict = {}):
+    def get(self, group: str, key: str, vars: dict = {}):
         if not group or not key:
             print("Group and key are required")
             return None

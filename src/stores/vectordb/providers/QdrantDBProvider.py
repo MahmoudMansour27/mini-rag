@@ -2,6 +2,7 @@ from qdrant_client import models, QdrantClient
 from ..VectorDBAbstractInterface import VectorDBAbstractInterface
 from ..VectorDBEnums import DistanceMethod
 from typing import List
+from models.db_schemes.data_chunk import RetrievedDocument
 
 class QdrantDBProvider(VectorDBAbstractInterface):
     def __init__(self, db_path: str, distance_method: str):
@@ -59,10 +60,11 @@ class QdrantDBProvider(VectorDBAbstractInterface):
             return False
 
         try: 
-            _ = self.client.upload_records(
+            _ = self.client.upsert(
                 collection_name= collection_name,
-                records=[
-                    models.Record(
+                points=[
+                    models.PointStruct(
+                        id = record_id,
                         vector=vector,
                         payload= {
                             "text": text,
@@ -86,13 +88,16 @@ class QdrantDBProvider(VectorDBAbstractInterface):
 
         for i in range(0, len(texts), batch_size):
             batch_end = i + batch_size
+
             batch_texts = texts[i:batch_end]
             batch_vectors = vectors[i:batch_end]
             batch_metadata = metadata[i:batch_end]
+            batch_record_ids = record_ids[i:batch_end]
 
             # prepare records
             records = [
-                models.Record(
+                models.PointStruct(
+                    id= batch_record_ids[x],
                     vector= batch_vectors[x],
                     payload= {
                         "text": batch_texts[x],
@@ -104,9 +109,9 @@ class QdrantDBProvider(VectorDBAbstractInterface):
 
             # insertion
             try:
-                _ = self.client.upload_vectors(
+                _ = self.client.upsert(
                     collection_name= collection_name,
-                    records= records
+                    points= records
                 )
             except Exception as e:
                 print(f"Error inserting batch into collection {collection_name}: {e}")
@@ -114,8 +119,26 @@ class QdrantDBProvider(VectorDBAbstractInterface):
         return True
 
     def search_by_vector(self, collection_name: str, vector: list, limit: int = 5):
-        return self.client.search(
+        # print(f"Input Vector length: {len(vector)}")
+        results = self.client.query_points(
             collection_name= collection_name,
-            query_vector= vector,
+            query= vector,
             limit= limit
         )
+
+        print(f"Search results:\n {type(results)}")
+
+        results_points = results.points
+
+        if not results_points or len(results_points) == 0:
+            return None
+
+        return [
+            RetrievedDocument(
+                text= point.payload.get("text", ""),
+                score= point.score
+            )
+            for point in results_points
+        ]
+
+

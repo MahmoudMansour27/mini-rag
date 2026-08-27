@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
         )
 
     # vector db client
-    app.state.vectordb_client = vectordb_provider_factory.creat(
+    app.state.vectordb_client = vectordb_provider_factory.create(
         provider= settings.VECTOR_DB_BACKEND
     )
     app.state.vectordb_client.connect()

@@ -4,8 +4,6 @@ from stores.llm.LLMEnums import DocumentTypeEnum
 from typing import List
 import json
 
-from stores.llm.templates.template_parser import TemplateParser
-
 class NLPController(BaseController):
     def __init__(self, vectordb_client, generation_client,
                  embedding_client, template_parser):
@@ -75,13 +73,15 @@ class NLPController(BaseController):
             document_type= DocumentTypeEnum.QUERY.value
         )
 
+        print(f"NLP Controller - Input Vector: {len(vector)}")
+
         if not vector or len(vector) == 0:
             print("Failed to generate embedding for the query text.")
             return False
 
         results = self.vectordb_client.search_by_vector(
             collection_name= collection_name,
-            query_vector= vector,
+            vector= vector,
             limit= limit
         )
 
@@ -105,21 +105,37 @@ class NLPController(BaseController):
             return None, None, None
 
         system_prompt = self.template_parser.get(group= "rag", key= "system_prompt")
+        print(f"System prompt:\n {system_prompt}")
+
+        print(f"Retrieved documents:\n {retrieved_docs}")
 
         document_prompts = "\n".join([
-            self.template_parser.get(group = "rag", key = "document_prompt",
-                                     var = {"doc_num":idx+1, 
-                                            "chunk_text": doc.text})
-                                            for idx, doc in enumerate(retrieved_docs)])
+            self.template_parser.get(
+                group= "rag",
+                key= "document_prompt",
+                vars = {
+                    "doc_num": idx + 1,
+                    "chunk_text": doc.text
+                }
+            )
+            for idx, doc in enumerate(retrieved_docs)
+        ])
 
-        footer_prompt = self.template_parser.get(group= "rag", key= "footer_prompt")
+        print(f"Document prompts:\n {document_prompts}")
 
-        chat_history = [
-            self.generation_client.construct_prompt(
+        footer_prompt = self.template_parser.get(
+            group= "rag", 
+            key= "footer_prompt",
+            vars = {
+                "query": query
+            }
+        )
+
+        chat_history = self.generation_client.construct_prompt(
                 role = self.generation_client.enums.SYSTEM.value,
                 prompt = system_prompt
-            )
-        ]
+                )
+        
 
         full_prompt = "\n".join([document_prompts, footer_prompt])
 

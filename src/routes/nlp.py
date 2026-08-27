@@ -4,7 +4,7 @@ from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
 from controllers.NLPController import NLPController
 from models.enums import ResponseSignal
-from schemes.nlp import PushRequest, SearchRequest
+from .schemes.nlp import PushRequest, SearchRequest
 
 nlp_router = APIRouter(
     prefix= "/api/v1/nlp",
@@ -48,10 +48,12 @@ async def index_project(request: Request, project_id: str, push_request: PushReq
     idx = 0
     while has_records:
         page_chunks = await chunk_model.get_project_chunks(
-            project_id= project_id,
+            project_id= project.id,
             page_no= page_no,
 
         )
+
+        print(f"Page chunks:\n {page_chunks}")
 
         if len(page_chunks):
             page_no += 1
